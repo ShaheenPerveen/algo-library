@@ -1,5 +1,8 @@
 //Algorithms for undirected graphs( change addEdge(int,int) function for directed graphs)
 
+#define DEBUG       //comment when you have to disable all debug macros.
+#define LOCAL
+#define NDEBUG    //comment when all assert statements have to be disabled.
 #include <iostream>
 #include <cstring>
 #include <sstream>
@@ -9,32 +12,61 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <list>
+#include <bitset>
 #include <climits>
 #include <ctime>
-#include <queue>
-#include <stack>
 #include <algorithm>
+#include <functional>
+#include <stack>
+#include <queue>
+#include <list>
+#include <deque>
 #include <sys/time.h>
-//#define NDEBUG    //when all assert statements have to be disabled
+#include <iomanip>
+#include <cstdarg>
+#include <utility> //std::pair
 #include <cassert>
-#define tr(c,i) for(typeof((c).begin()) i = (c).begin(); i != (c).end(); i++) 
+#define tr(c,i) for(typeof(c.begin()) i = (c).begin(); i != (c).end(); i++) 
 #define present(c,x) ((c).find(x) != (c).end()) 
+#define all(x) x.begin(), x.end()
+#define pb push_back
+#define mp make_pair
+#define log2(x) (log(x)/log(2))
 #define ARRAY_SIZE(arr) (1[&arr]-arr)      
+#define INDEX(arr,elem)        (lower_bound(all(arr),elem)-arr.begin())
 #define lld long long int
 #define MOD 1000000007
+#define gcd __gcd
+#define equals(a,b) (a.compareTo(b)==0)    //for strings only
 using namespace std;
 
 
-class Graph          //undirected graphs, change addEdge function for directed graphs
+#ifdef DEBUG
+#define debug(args...)            {dbg,args; cerr<<endl;}
+#else
+#define debug(args...)              // Just strip off all debug tokens
+#endif
+
+struct debugger
+{
+    template<typename T> debugger& operator , (const T& v)
+    {    
+        cerr<<v<<" ";    
+        return *this;    
+    }
+
+}dbg;
+
+
+class Graph          //by default directed graph
 {
 private:
 	int V;    //number of nodes
 	vector<int> *adj;    //pointer to array of vectors for storing in adjacency list format
 public:
 	Graph(int V);
-	void addEdge(int u, int v,bool directed); //join u to v
-	void printDFS(int u); //prints tree with origin u using the DFS algorithm
+	void addEdge(int u, int v,bool directed=true); //join u to v
+	void printDFS(); //prints connected components by calling DFS
 	void DFS(int u, bool *visited);   //assisting function for printDFS
 	int shortestDistance(int u, int v); //returns shortest distance(number of edges) between nodes u and v.
 	void topological_sort_DFS();
@@ -147,6 +179,7 @@ int Graph::shortestDistance(int u, int v)         //uses BFS algorithm...
 
 void Graph::DFS(int u, bool *visited)
 {
+	visited[u]=true;
 	stack<int> nodes;
 	nodes.push(u);
 	bool present = true;     //if the last node has produced another node or not. 
@@ -154,13 +187,16 @@ void Graph::DFS(int u, bool *visited)
 	{
 		present=false;
 		int k=nodes.top();
+
+
+		visited[k]=true;
 		for(vector<int>::iterator it=adj[k].begin(); it!=adj[k].end();it++)
 		{
 			if(!visited[*it])
 			{
-				present=true;
 				nodes.push(*it);
-				visited[*it]=true;
+				present=true;
+				break;
 			}
 		}
 		if(!present)
@@ -168,12 +204,15 @@ void Graph::DFS(int u, bool *visited)
 			cout<<nodes.top()<<" ";
 			nodes.pop();
 		}
+
+
 	}
 }
+	
 
-void Graph::printDFS(int u)
+void Graph::printDFS()
 {
-	bool visited[V+1], done=false;
+	bool visited[V+1];
 	int i;
 	memset(visited, false, sizeof visited);
 	
@@ -181,10 +220,12 @@ void Graph::printDFS(int u)
 	{
 		if(!visited[i])
 		{
+			debug("hey!");
 			visited[i]=true;
 			DFS(i, visited);
 		}
 	}
+	cout<<endl;
 	
 	
 }
@@ -230,25 +271,39 @@ void Graph::bridgeDetection()     //assuming connected graph
 
 
 
+template<class T>
+inline void inputInt(T &n )
+{
+	n=0;
+ 	T ch=getchar_unlocked();
+  	while( ch < '0' || ch > '9' )
+		ch=getchar_unlocked();
+   	while(  ch >= '0' && ch <= '9' )
+		n = (n<<3)+(n<<1) + ch-'0', ch=getchar_unlocked();
+}
+
 int main()
 {
-	Graph g(8);
-	g.addEdge(4,1,false);
-	g.addEdge(4,2,false);
-	g.addEdge(5,2,false);
-	g.addEdge(4,3,false);
-	g.addEdge(6,4,false);
-	g.addEdge(6,5,false);
-	g.addEdge(7,4,false);
-	g.addEdge(8,5,false);
-	g.addEdge(8,3,false);
-	Graph g1(g);
-	g1.printDFS(1);
-	cout<<"\n\n";
-	g.bridgeDetection();
-	cout<<endl<<endl;
-	cout<<"shortest distance:"<<g.shortestDistance(6,1)<<endl;
-	g1.topological_sort_DFS();
+#ifdef LOCAL
+	freopen("input.in","r",stdin);
+#endif
+	lld v,e,a,b,i;
+	inputInt(v);
+	while(v!=0)
+	{
+		Graph g(v);
+		inputInt(e);
+		for(i=1;i<=e;i++)
+		{
+			inputInt(a);
+			inputInt(b);
+			g.addEdge(a,b,false);
+		}
+
+		g.printDFS();
+		inputInt(v);
+	}
+
 }
 
 
